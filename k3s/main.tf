@@ -13,8 +13,8 @@ resource "random_uuid" "k3s_cluster_secret" {
 }
 
 # Default network
-resource "docker_network" "k3s_default" {
-  name   = "${var.cluster_name}-default"
+resource "docker_network" "k3s" {
+  name   = "${var.cluster_name}"
   driver = "bridge"
 }
 
@@ -53,7 +53,7 @@ resource "docker_container" "k3s_master" {
 
   # TODO: https://github.com/terraform-providers/terraform-provider-docker/issues/184
   networks = [
-    docker_network.k3s_default.id,
+    docker_network.k3s.id,
   ]
 
   ports {
@@ -106,7 +106,7 @@ resource "docker_container" "k3s_worker" {
 
   # TODO: https://github.com/terraform-providers/terraform-provider-docker/issues/184
   networks = [
-    docker_network.k3s_default.id,
+    docker_network.k3s.id,
   ]
 
   mounts {
