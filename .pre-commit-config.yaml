@@ -1,0 +1,18 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: git://github.com/antonbabenko/pre-commit-terraform
+  rev: v1.12.0
+  hooks:
+    # TODO: https://github.com/segmentio/terraform-docs/issues/62
+    # - id: terraform_docs
+    - id: terraform_fmt
+- repo: git://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
+  hooks:
+    - id: check-yaml
+    - id: end-of-file-fixer
+    - id: trailing-whitespace
+    - id: check-case-conflict
+    - id: check-merge-conflict
+    - id: check-executables-have-shebangs
