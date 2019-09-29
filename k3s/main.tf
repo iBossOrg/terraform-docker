@@ -51,6 +51,7 @@ resource "docker_container" "k3s_master" {
     "K3S_KUBECONFIG_MODE=640"
   ]
 
+  # TODO: https://github.com/terraform-providers/terraform-provider-docker/issues/184
   networks = [
     docker_network.k3s_default.id,
   ]
@@ -103,6 +104,7 @@ resource "docker_container" "k3s_worker" {
     "K3S_URL=https://${var.master_name}:${var.kubernetes_api_port}",
   ]
 
+  # TODO: https://github.com/terraform-providers/terraform-provider-docker/issues/184
   networks = [
     docker_network.k3s_default.id,
   ]
