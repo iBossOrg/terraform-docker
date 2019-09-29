@@ -28,16 +28,22 @@ variable "kubernetes_api_port" {
   default     = 6443
 }
 
+variable "cluster_name" {
+  description = "Kubernetes cluster name"
+  type        = string
+  default     = "k3s-default"
+}
+
 variable "master_name" {
   description = "Kubernetes master node name"
   type        = string
-  default     = "k3s-master"
+  default     = "server"
 }
 
 variable "worker_name" {
-  description = "Kubernetes worker nodes name template"
+  description = "Kubernetes worker nodes name"
   type        = string
-  default     = "k3s-worker-%d"
+  default     = "worker"
 }
 
 variable "domain" {

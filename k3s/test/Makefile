@@ -1,4 +1,4 @@
-MK_DIR  ?= $(CURDIR)/../../Mk
+MK_DIR  ?= $(CURDIR)/../../../Mk
 include $(MK_DIR)/terraform.mk
 
 init: tf-init

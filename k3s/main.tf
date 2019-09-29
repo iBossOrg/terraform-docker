@@ -1,4 +1,4 @@
-# k3s image
+# Docker image
 data "docker_registry_image" "k3s" {
   name = "${var.registry == null ? "" : "/var.registry"}${var.image_name}:${var.image_tag}"
 }
@@ -7,16 +7,35 @@ resource "docker_image" "k3s" {
   pull_triggers = [data.docker_registry_image.k3s.sha256_digest]
 }
 
-# k3s cluster secret
+# Kubernetes cluster secret
 resource "random_uuid" "k3s_cluster_secret" {
   keepers = { keep = true }
 }
 
-# k3s master node
+# Default network
+resource "docker_network" "k3s_default" {
+  name   = "${var.cluster_name}-default"
+  driver = "bridge"
+}
+
+# Images volume
+resource "docker_volume" "k3s_images" {
+  name   = "${var.cluster_name}-images"
+  driver = "local"
+}
+
+# Node names
+locals {
+  domain      = var.domain == null ? "" : ".${var.domain}"
+  master_name = "${var.cluster_name}-${var.master_name}"
+  worker_name = "${var.cluster_name}-${var.worker_name}-%d"
+}
+
+# Master node
 resource "docker_container" "k3s_master" {
-  name       = var.master_name
+  name       = local.master_name
   image      = docker_image.k3s.name
-  hostname   = "${var.master_name}${var.domain == null ? "" : ".${var.domain}"}"
+  hostname   = "${local.master_name}${local.domain}"
   privileged = var.worker_nodes_count == 0
 
   command = compact([
@@ -30,6 +49,10 @@ resource "docker_container" "k3s_master" {
     "K3S_CLUSTER_SECRET=${random_uuid.k3s_cluster_secret.result}",
     "K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml",
     "K3S_KUBECONFIG_MODE=640"
+  ]
+
+  networks = [
+    docker_network.k3s_default.id,
   ]
 
   ports {
@@ -49,6 +72,11 @@ resource "docker_container" "k3s_master" {
   }
 
   volumes {
+    container_path = "/images"
+    volume_name    = docker_volume.k3s_images.name
+  }
+
+  volumes {
     container_path = "/output"
     host_path      = abspath(var.kubeconfig_dir)
   }
@@ -58,11 +86,11 @@ resource "docker_container" "k3s_master" {
   }
 }
 
-# k3s worker nodes
+# Worker nodes
 resource "docker_container" "k3s_worker" {
-  name       = format(var.worker_name, count.index + 1)
+  name       = format(local.worker_name, count.index + 1)
   image      = docker_image.k3s.name
-  hostname   = "${format(var.worker_name, count.index + 1)}${var.domain == null ? "" : ".${var.domain}"}"
+  hostname   = "${format(local.worker_name, count.index + 1)}${local.domain}"
   privileged = true
   count      = var.worker_nodes_count
 
@@ -75,6 +103,10 @@ resource "docker_container" "k3s_worker" {
     "K3S_URL=https://${var.master_name}:${var.kubernetes_api_port}",
   ]
 
+  networks = [
+    docker_network.k3s_default.id,
+  ]
+
   mounts {
     target = "/run"
     type   = "tmpfs"
@@ -83,5 +115,10 @@ resource "docker_container" "k3s_worker" {
   mounts {
     target = "/var/run"
     type   = "tmpfs"
+  }
+
+  volumes {
+    container_path = "/images"
+    volume_name    = docker_volume.k3s_images.name
   }
 }
