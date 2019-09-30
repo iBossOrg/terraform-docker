@@ -1,3 +1,9 @@
+variable "dependencies" {
+  description = "Dependencies to be created before this module"
+  type        = list(string)
+  default     = null
+}
+
 variable "registry" {
   description = "k3s docker image registry"
   type        = string
@@ -22,8 +28,14 @@ variable "kubeconfig_dir" {
   default     = "."
 }
 
-variable "kubernetes_api_port" {
-  description = "Kubernetes API port"
+variable "kubernetes_http_port" {
+  description = "Kubernetes API http port"
+  type        = number
+  default     = 6442
+}
+
+variable "kubernetes_https_port" {
+  description = "Kubernetes API https port"
   type        = number
   default     = 6443
 }
@@ -44,6 +56,12 @@ variable "worker_name" {
   description = "Kubernetes worker nodes name"
   type        = string
   default     = "worker"
+}
+
+variable "ingress_ports" {
+  description = "Ingress ports"
+  type        = list(map(string))
+  default     = null
 }
 
 variable "domain" {

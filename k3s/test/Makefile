@@ -9,10 +9,10 @@ apply: tf-apply
 
 output: tf-output
 
-destroy: tf-destroy tf-forget
+destroy: tf-destroy forget
 
 forget: tf-forget
-
-clean: tf-clean
 	@set -ex; \
-	rm -rfv k3d-*
+	rm -rfv k3s-*
+
+clean: tf-clean forget
